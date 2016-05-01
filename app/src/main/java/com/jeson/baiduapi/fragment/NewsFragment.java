@@ -68,7 +68,16 @@ public class NewsFragment extends Fragment {
             mSwipyRefreshLayout.setOnRefreshListener(new SwipyRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh(SwipyRefreshLayoutDirection direction) {
-                    getNewes();
+                    if (direction == SwipyRefreshLayoutDirection.BOTTOM) {
+                        getNewes();
+                    }else
+                    {
+                        mPage = 0;
+                        mNewses = new ArrayList<News>();
+                        mRecyclerAdapter = new RecyclerAdapter(mNewses, getContext());
+                        mRecyclerView.setAdapter(mRecyclerAdapter);
+                        getNewes();
+                    }
                 }
             });
             mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

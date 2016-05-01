@@ -3,7 +3,7 @@
     android:id="@+id/swipyrefresh_newsfragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:srl_direction="bottom">
+    app:srl_direction="both">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerview_newsfragment"

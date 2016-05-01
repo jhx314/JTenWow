@@ -90,7 +90,15 @@ public class JokeFragment extends Fragment {
             mSwipyRefreshLayout.setOnRefreshListener(new SwipyRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh(SwipyRefreshLayoutDirection direction) {
-                    getJokes();
+                    if (direction == SwipyRefreshLayoutDirection.BOTTOM) {
+                        getJokes();
+                    }else{
+                        mPage = 0;
+                        mJokes = new ArrayList<Joke>();
+                        mRecyclerAdapter = new RecyclerAdapter(mJokes, getContext());
+                        mRecyclerView.setAdapter(mRecyclerAdapter);
+                        getJokes();
+                    }
                 }
             });
             getJokes();
