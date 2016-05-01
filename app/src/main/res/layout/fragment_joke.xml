@@ -1,0 +1,14 @@
+<com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipyrefresh_jokefragment"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:srl_direction="bottom">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerview_jokefragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </android.support.v7.widget.RecyclerView>
+
+</com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
