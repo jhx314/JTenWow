@@ -148,7 +148,7 @@ public class PictureFragment extends Fragment {
                         holder.pic.setImageBitmap(response);
                     }
                 }
-            }, 0, 0, null, new Response.ErrorListener() {
+            }, 0, 0, Bitmap.Config.RGB_565, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     //Toast.makeText(getContext(), error.toString(), Toast.LENGTH_SHORT).show();
