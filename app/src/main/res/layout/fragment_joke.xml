@@ -1,14 +1,28 @@
-<com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/swipyrefresh_jokefragment"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:srl_direction="both">
+    android:orientation="vertical">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerview_jokefragment"
+    <ProgressBar
+        android:id="@+id/progressbar_joke"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </android.support.v7.widget.RecyclerView>
+        android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.ProgressBar"/>
 
-</com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+    <com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout
+        android:id="@+id/swipyrefresh_jokefragment"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        app:srl_direction="both">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview_jokefragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </android.support.v7.widget.RecyclerView>
+
+    </com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+
+</LinearLayout>

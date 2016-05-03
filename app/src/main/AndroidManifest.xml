@@ -21,7 +21,8 @@
         <activity
             android:name=".activity.NewsDetailsActivity"
             android:label="News"
-            android:theme="@style/NewsDetailsTheme" />
+            android:theme="@style/NewsDetailsTheme"
+            />
         <activity android:name=".activity.PicDetailsActivity"
             android:theme="@style/NewsDetailsTheme"
             android:label="Picture"></activity>

@@ -1,8 +1,11 @@
 package com.jeson.baiduapi.fragment;
 
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncStatusObserver;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +16,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +29,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.jeson.baiduapi.R;
 import com.jeson.baiduapi.model.Joke;
+import com.jeson.baiduapi.sqlite.JokeReaderContract;
+import com.jeson.baiduapi.sqlite.JokeReaderDbHelper;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
@@ -51,6 +57,8 @@ public class JokeFragment extends Fragment {
     private RecyclerAdapter mRecyclerAdapter;
     private List<Joke> mJokes;
     private int mPage;
+    private JokeReaderDbHelper mDbHelper;
+    private ProgressBar mProgressBar;
 
     private Handler mHandler = new Handler(){
         @Override
@@ -73,18 +81,20 @@ public class JokeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if( mFragment == null){
+            mDbHelper = new JokeReaderDbHelper(getContext());
             mPage = 0;
             mFragment = inflater.inflate(R.layout.fragment_joke, container, false);
             mRequestQueue = Volley.newRequestQueue(getContext());
             mSwipyRefreshLayout = (SwipyRefreshLayout) mFragment.findViewById(R.id.swipyrefresh_jokefragment);
             mRecyclerView = (RecyclerView) mFragment.findViewById(R.id.recyclerview_jokefragment);
+            mProgressBar = (ProgressBar) mFragment.findViewById(R.id.progressbar_joke);
 
             mSwipyRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
                     android.R.color.holo_green_light,
                     android.R.color.holo_orange_light,
                     android.R.color.holo_red_light);
             mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            mJokes = new ArrayList<>();
+            mJokes = getJokesFromDB();
             mRecyclerAdapter = new RecyclerAdapter(mJokes, getContext());
             mRecyclerView.setAdapter(mRecyclerAdapter);
             mSwipyRefreshLayout.setOnRefreshListener(new SwipyRefreshLayout.OnRefreshListener() {
@@ -114,6 +124,59 @@ public class JokeFragment extends Fragment {
         }
     }
 
+    public void insertJokeToDB(Joke joke){
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(JokeReaderContract.JokeEntry.COLUMN_NAME_JOKE_ID, joke.getType());
+        values.put(JokeReaderContract.JokeEntry.COLUMN_NAME_JOKE_TITLE, joke.getTitle());
+        values.put(JokeReaderContract.JokeEntry.COLUMN_NAME_JOKE_TEXT, joke.getText());
+        values.put(JokeReaderContract.JokeEntry.COLUMN_NAME_JOKE_CREATIME, joke.getCt());
+
+        db.insert(JokeReaderContract.JokeEntry.TABLE_NAME,
+                null, values);
+        db.close();
+    }
+
+    public List<Joke> getJokesFromDB(){
+        List<Joke> jokes = new ArrayList<>();
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        String[] projection = {
+                JokeReaderContract.JokeEntry._ID,
+                JokeReaderContract.JokeEntry.COLUMN_NAME_JOKE_ID,
+                JokeReaderContract.JokeEntry.COLUMN_NAME_JOKE_TITLE,
+                JokeReaderContract.JokeEntry.COLUMN_NAME_JOKE_TEXT,
+                JokeReaderContract.JokeEntry.COLUMN_NAME_JOKE_CREATIME
+        };
+
+        String sortOrder =
+                JokeReaderContract.JokeEntry._ID + " DESC";
+
+        Cursor c = db.query(
+                JokeReaderContract.JokeEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                null);
+        c.moveToFirst();
+        if (c.getCount() == 0){
+            return jokes;
+        }
+        do {
+            Joke joke = new Joke();
+            joke.setType(c.getInt(1));
+            joke.setTitle(c.getString(2));
+            joke.setText(c.getString(3));
+            joke.setCt(c.getString(4));
+            jokes.add(joke);
+            System.out.println(c.getString(2));
+        }while(c.moveToNext());
+        db.close();
+        return jokes;
+    }
+
     private void getJokes(){
         mPage++;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, "http://apis.baidu.com/showapi_open_bus/showapi_joke/joke_text?page="+ mPage , null,
@@ -122,6 +185,13 @@ public class JokeFragment extends Fragment {
                     public void onResponse(JSONObject response) {
                         try {
                             JSONArray jsonArray = response.getJSONObject("showapi_res_body").getJSONArray("contentlist");
+                            if (mProgressBar.getVisibility() == View.VISIBLE){
+                                mDbHelper.getWritableDatabase().execSQL("delete from " + JokeReaderContract.JokeEntry.TABLE_NAME);
+                                mProgressBar.setVisibility(View.GONE);
+                                mJokes = new ArrayList<>();
+                                mRecyclerAdapter = new RecyclerAdapter(mJokes, getContext());
+                                mRecyclerView.setAdapter(mRecyclerAdapter);
+                            }
                             for (int i = 0; i < jsonArray.length(); i++){
                                 JSONObject object = jsonArray.getJSONObject(i);
                                 Joke joke = new Joke();
@@ -130,8 +200,8 @@ public class JokeFragment extends Fragment {
                                 joke.setCt(object.getString("ct"));
                                 joke.setType(object.getInt("type"));
                                 mJokes.add(joke);
+                                insertJokeToDB(joke);
                             }
-                            //mRecyclerAdapter = new RecyclerAdapter(jokes, getContext());
                             mRecyclerAdapter.notifyItemChanged(mJokes.size());
                             Message msg = new Message();
                             msg.what = LOADJOKES_SUCCESS;
