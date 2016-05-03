@@ -1,11 +1,15 @@
 package com.jeson.baiduapi.fragment;
 
 
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +36,7 @@ import com.jeson.baiduapi.R;
 import com.jeson.baiduapi.model.Joke;
 import com.jeson.baiduapi.sqlite.JokeReaderContract;
 import com.jeson.baiduapi.sqlite.JokeReaderDbHelper;
+import com.jeson.baiduapi.util.NetUtil;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
@@ -59,6 +65,33 @@ public class JokeFragment extends Fragment {
     private int mPage;
     private JokeReaderDbHelper mDbHelper;
     private ProgressBar mProgressBar;
+    private TextView mTextViewCheckNet;
+    private boolean mIsNetEnable;
+    private boolean mIsFirstLoadJokes = true; //是否是第一次从网络加载数据
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)){
+                if (NetUtil.checkNetworkConnection(context)){
+                    mIsNetEnable = true;
+                    mTextViewCheckNet.setVisibility(View.GONE);
+                    if (mIsFirstLoadJokes) {
+                        mIsFirstLoadJokes = false;
+                        mProgressBar.setVisibility(View.VISIBLE);
+                        getJokes();
+                    }
+                    Log.d("net","当前网络可用");
+                }else{
+                    mIsNetEnable = false;
+                    mTextViewCheckNet.setVisibility(View.VISIBLE);
+                    mProgressBar.setVisibility(View.GONE);
+                    Log.d("net","当前网络不可用");
+                }
+            }
+        }
+    };
 
     private Handler mHandler = new Handler(){
         @Override
@@ -81,6 +114,7 @@ public class JokeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if( mFragment == null){
+
             mDbHelper = new JokeReaderDbHelper(getContext());
             mPage = 0;
             mFragment = inflater.inflate(R.layout.fragment_joke, container, false);
@@ -88,6 +122,7 @@ public class JokeFragment extends Fragment {
             mSwipyRefreshLayout = (SwipyRefreshLayout) mFragment.findViewById(R.id.swipyrefresh_jokefragment);
             mRecyclerView = (RecyclerView) mFragment.findViewById(R.id.recyclerview_jokefragment);
             mProgressBar = (ProgressBar) mFragment.findViewById(R.id.progressbar_joke);
+            mTextViewCheckNet = (TextView) mFragment.findViewById(R.id.textview_joke_checknet);
 
             mSwipyRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
                     android.R.color.holo_green_light,
@@ -107,11 +142,23 @@ public class JokeFragment extends Fragment {
                         mJokes = new ArrayList<Joke>();
                         mRecyclerAdapter = new RecyclerAdapter(mJokes, getContext());
                         mRecyclerView.setAdapter(mRecyclerAdapter);
-                        getJokes();
+                        if (mIsNetEnable) {
+                            getJokes();
+                        }else{
+                            Toast.makeText(getContext(),"请连接网络再进行刷新操作！",Toast.LENGTH_SHORT).show();
+                            mSwipyRefreshLayout.setRefreshing(false);
+                        }
                     }
                 }
             });
-            getJokes();
+
+            //由于要改变界面，所以在控件初始化后开始广播接收
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+            getContext().registerReceiver(mBroadcastReceiver, intentFilter);
+            if (mIsNetEnable){
+                getJokes();
+            }
         }
         return mFragment;
     }
@@ -171,7 +218,6 @@ public class JokeFragment extends Fragment {
             joke.setText(c.getString(3));
             joke.setCt(c.getString(4));
             jokes.add(joke);
-            System.out.println(c.getString(2));
         }while(c.moveToNext());
         db.close();
         return jokes;

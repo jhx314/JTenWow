@@ -3,6 +3,7 @@
     package="com.jeson.baiduapi">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -26,6 +27,8 @@
         <activity android:name=".activity.PicDetailsActivity"
             android:theme="@style/NewsDetailsTheme"
             android:label="Picture"></activity>
+        <service android:enabled="true" android:name=".service.NetWorkService">
+        </service>
     </application>
 
 </manifest>

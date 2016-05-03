@@ -1,5 +1,6 @@
 package com.jeson.baiduapi.activity;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,6 +14,7 @@ import com.jeson.baiduapi.R;
 import com.jeson.baiduapi.fragment.JokeFragment;
 import com.jeson.baiduapi.fragment.NewsFragment;
 import com.jeson.baiduapi.fragment.PictureFragment;
+import com.jeson.baiduapi.service.NetWorkService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //startService(new Intent(this, NetWorkService.class));
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

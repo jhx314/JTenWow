@@ -5,6 +5,16 @@
     android:layout_width="match_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/textview_joke_checknet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="当前网络不可用!请检查网络"
+        android:gravity="center"
+        android:textColor="@android:color/holo_red_light"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        />
     <ProgressBar
         android:id="@+id/progressbar_joke"
         android:layout_width="match_parent"
