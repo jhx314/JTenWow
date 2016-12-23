@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -65,7 +66,7 @@ public class JokeFragment extends Fragment {
     private int mPage;
     private JokeReaderDbHelper mDbHelper;
     private ProgressBar mProgressBar;
-    private TextView mTextViewCheckNet;
+    private CardView mCardViewCheckNet;
     private boolean mIsNetEnable;
     private boolean mIsFirstLoadJokes = true; //是否是第一次从网络加载数据
 
@@ -76,18 +77,16 @@ public class JokeFragment extends Fragment {
             if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)){
                 if (NetUtil.checkNetworkConnection(context)){
                     mIsNetEnable = true;
-                    mTextViewCheckNet.setVisibility(View.GONE);
+                    mCardViewCheckNet.setVisibility(View.GONE);
                     if (mIsFirstLoadJokes) {
                         mIsFirstLoadJokes = false;
                         mProgressBar.setVisibility(View.VISIBLE);
                         getJokes();
                     }
-                    Log.d("net","当前网络可用");
                 }else{
                     mIsNetEnable = false;
-                    mTextViewCheckNet.setVisibility(View.VISIBLE);
+                    mCardViewCheckNet.setVisibility(View.VISIBLE);
                     mProgressBar.setVisibility(View.GONE);
-                    Log.d("net","当前网络不可用");
                 }
             }
         }
@@ -122,7 +121,7 @@ public class JokeFragment extends Fragment {
             mSwipyRefreshLayout = (SwipyRefreshLayout) mFragment.findViewById(R.id.swipyrefresh_jokefragment);
             mRecyclerView = (RecyclerView) mFragment.findViewById(R.id.recyclerview_jokefragment);
             mProgressBar = (ProgressBar) mFragment.findViewById(R.id.progressbar_joke);
-            mTextViewCheckNet = (TextView) mFragment.findViewById(R.id.textview_joke_checknet);
+            mCardViewCheckNet = (CardView) mFragment.findViewById(R.id.cardview_joke_checknet);
 
             mSwipyRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
                     android.R.color.holo_green_light,
@@ -135,6 +134,11 @@ public class JokeFragment extends Fragment {
             mSwipyRefreshLayout.setOnRefreshListener(new SwipyRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh(SwipyRefreshLayoutDirection direction) {
+                    if ( !mIsNetEnable ){
+                        Toast.makeText(getContext(),"请连接网络再进行刷新操作！",Toast.LENGTH_SHORT).show();
+                        mSwipyRefreshLayout.setRefreshing(false);
+                        return;
+                    }
                     if (direction == SwipyRefreshLayoutDirection.BOTTOM) {
                         getJokes();
                     }else{
@@ -142,12 +146,6 @@ public class JokeFragment extends Fragment {
                         mJokes = new ArrayList<Joke>();
                         mRecyclerAdapter = new RecyclerAdapter(mJokes, getContext());
                         mRecyclerView.setAdapter(mRecyclerAdapter);
-                        if (mIsNetEnable) {
-                            getJokes();
-                        }else{
-                            Toast.makeText(getContext(),"请连接网络再进行刷新操作！",Toast.LENGTH_SHORT).show();
-                            mSwipyRefreshLayout.setRefreshing(false);
-                        }
                     }
                 }
             });
@@ -257,7 +255,7 @@ public class JokeFragment extends Fragment {
                             Message msg = new Message();
                             msg.what = LOADJOKES_FAILURE;
                             Bundle bundle = new Bundle();
-                            bundle.putString("error", e.getMessage().toString());
+                            bundle.putString("error", "服务器异常，请稍后重试!");
                             msg.setData(bundle);
                             mHandler.sendMessage(msg);
                         }
@@ -268,7 +266,7 @@ public class JokeFragment extends Fragment {
                 Message msg = new Message();
                 msg.what = LOADJOKES_FAILURE;
                 Bundle bundle = new Bundle();
-                bundle.putString("error", error.toString());
+                bundle.putString("error", "服务器异常，请稍后重试!");
                 msg.setData(bundle);
                 mHandler.sendMessage(msg);
             }

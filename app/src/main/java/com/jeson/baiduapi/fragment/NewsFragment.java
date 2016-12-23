@@ -94,7 +94,7 @@ public class NewsFragment extends Fragment {
 
     private void getNewes(){
         mPage++;
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, "http://apis.baidu.com/txapi/social/social?num=20&page=" + mPage,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, "http://apis.baidu.com/txapi/keji/keji?num=20&page=" + mPage,
                 null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

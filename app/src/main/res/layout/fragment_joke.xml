@@ -5,16 +5,28 @@
     android:layout_width="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textview_joke_checknet"
+    <android.support.v7.widget.CardView
+        android:id="@+id/cardview_joke_checknet"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:translationZ="1dp"
+        android:elevation="1dp"
+        app:cardBackgroundColor="@android:color/holo_red_dark"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="当前网络不可用!请检查网络"
-        android:gravity="center"
-        android:textColor="@android:color/holo_red_light"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        />
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_margin="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="当前网络不可用!请检查网络"
+            android:textColor="@android:color/darker_gray"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            />
+    </android.support.v7.widget.CardView>
+
     <ProgressBar
         android:id="@+id/progressbar_joke"
         android:layout_width="match_parent"
